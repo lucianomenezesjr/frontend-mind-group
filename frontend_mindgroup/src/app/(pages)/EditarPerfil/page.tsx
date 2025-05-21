@@ -10,10 +10,15 @@ import BotaoSubmit from "@/app/components/BotaoSubmit";
 export default function EditProfilePage() {
   const [sidebarAberta, setSidebarAberta] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
   const [userData, setUserData] = useState({
     avatar: "",
     name: "",
     surname: "",
+    email: "",
     password: "",
     confirmPassword: ""
   });
@@ -21,15 +26,29 @@ export default function EditProfilePage() {
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
-    
-    // Simulação de dados do usuário
+
     if (storedToken) {
-      setUserData({
-        avatar: "#",
-        name: "Nome",
-        surname: "Sobrenome",
-        password: "",
-        confirmPassword: ""
+      fetch('http://localhost:3000/users/me', {
+        headers: {
+          'Authorization': `Bearer ${storedToken}`
+        }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Falha ao buscar dados do usuário');
+        return res.json();
+      })
+      .then(data => {
+        setUserData({
+          avatar: data.imagemPerfil || "",
+          name: data.nome || "",
+          surname: data.sobrenome || "",
+          email: data.email || "",
+          password: "",
+          confirmPassword: ""
+        });
+      })
+      .catch(() => {
+        setError("Erro ao carregar dados do perfil.");
       });
     }
   }, []);
@@ -42,17 +61,62 @@ export default function EditProfilePage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Dados atualizados:", userData);
-    alert("Perfil atualizado com sucesso!");
+    setError(null);
+    setSuccess(null);
+
+    if (userData.password !== userData.confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
+    if (!token) {
+      setError("Usuário não autenticado.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3000/users/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nome: userData.name,
+          sobrenome: userData.surname,
+          senha: userData.password || undefined,
+          imagemPerfil: userData.avatar,
+          email: userData.email
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Erro ao atualizar perfil");
+      }
+
+      setSuccess("Perfil atualizado com sucesso!");
+      setUserData(prev => ({
+        ...prev,
+        password: "",
+        confirmPassword: ""
+      }));
+    } catch (err: any) {
+      setError(err.message || "Erro inesperado");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
       <nav className="flex items-center justify-between p-6">
         <div className="flex space-x-6">
-          <Link href="/" className="text-gray-800 hover:text-gray-600 font-medium pr-5">
+          <Link href="/Home" className="text-gray-800 hover:text-gray-600 font-medium pr-5">
             Home
           </Link>
           <Link href="/artigos" className="text-gray-800 hover:text-gray-600 font-medium">
@@ -65,7 +129,7 @@ export default function EditProfilePage() {
             className="transition-transform duration-300 hover:scale-110"
           >
             <img
-              src={userData.avatar}
+              src={userData.avatar || "/default-avatar.png"}
               alt="Profile"
               className="w-10 h-10 rounded-full bg-purple-500"
             />
@@ -75,13 +139,15 @@ export default function EditProfilePage() {
       
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="text-xl pb-6 text-center">Perfil</h1>
-        
+
+        {error && <div className="mb-4 text-red-600 font-semibold">{error}</div>}
+        {success && <div className="mb-4 text-green-600 font-semibold">{success}</div>}
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Seção Avatar */}
           <div className="flex flex-col items-center md:flex-row md:items-start gap-6">
             <div className="flex-shrink-0">
               <img
-                src={userData.avatar}
+                src={userData.avatar || "/default-avatar.png"}
                 alt="Profile"
                 className="w-32 h-32 rounded-full bg-purple-500 object-cover"
               />
@@ -99,7 +165,6 @@ export default function EditProfilePage() {
             </div>
           </div>
           
-          {/* Campos do formulário */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
@@ -128,7 +193,19 @@ export default function EditProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={userData.email}
+                onChange={handleInputChange}
+                className="w-full p-3 border border-gray-400 rounded text-gray-600"
+                placeholder="Novo email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nova senha</label>
               <input
                 type="password"
                 name="password"
@@ -136,26 +213,24 @@ export default function EditProfilePage() {
                 onChange={handleInputChange}
                 className="w-full p-3 border border-gray-400 rounded text-gray-600"
                 placeholder="Nova senha"
-                required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar senha</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar nova senha</label>
               <input
                 type="password"
                 name="confirmPassword"
                 value={userData.confirmPassword}
                 onChange={handleInputChange}
                 className="w-full p-3 border border-gray-400 rounded text-gray-600"
-                placeholder="Confirme sua senha"
-                required
+                placeholder="Confirme a nova senha"
               />
             </div>
           </div>
 
           <div className="flex justify-center pt-4">
-            <BotaoSubmit className="w-full md:w-64" label="Salvar"/>
+            <BotaoSubmit className="w-full md:w-64" label={loading ? "Salvando..." : "Salvar"} />
           </div>
         </form>
       </main>

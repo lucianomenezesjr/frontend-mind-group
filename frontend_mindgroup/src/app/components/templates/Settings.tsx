@@ -12,7 +12,7 @@ export default function Settings() {
         <Link href="/meus-artigos" className="text-gray-800 hover:text-gray-600 p-2 rounded hover:bg-gray-100 transition text-right w-full">
           Meus Artigos
         </Link>
-        <Link href="/criar-artigo" className="text-gray-800 hover:text-gray-600 p-2 rounded hover:bg-gray-100 transition text-right w-full">
+        <Link href="/artigos/novo" className="text-gray-800 hover:text-gray-600 p-2 rounded hover:bg-gray-100 transition text-right w-full">
           Criar novo Artigo
         </Link>
       </nav>
