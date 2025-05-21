@@ -6,7 +6,7 @@ export default function Settings() {
   return (
     <div className="flex flex-col h-full">
       <nav className="flex flex-col space-y-6 flex-grow items-end"> {/* Adicionei items-end aqui */}
-        <Link href="/perfil" className="text-gray-800 hover:text-gray-600 p-2 rounded hover:bg-gray-100 transition text-right w-full">
+        <Link href="/EditarPerfil" className="text-gray-800 hover:text-gray-600 p-2 rounded hover:bg-gray-100 transition text-right w-full">
           Perfil
         </Link>
         <Link href="/meus-artigos" className="text-gray-800 hover:text-gray-600 p-2 rounded hover:bg-gray-100 transition text-right w-full">

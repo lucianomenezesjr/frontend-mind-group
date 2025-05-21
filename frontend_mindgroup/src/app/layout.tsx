@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import {Montserrat} from 'next/font/google';
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -20,6 +21,7 @@ export default function RootLayout({
     <html lang="pt-br">
       <body className={font.className}>
         {children}
+        <Toaster position="top-center" />
       </body>
     </html>
   );
