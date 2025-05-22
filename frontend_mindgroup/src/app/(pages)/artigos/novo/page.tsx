@@ -117,7 +117,7 @@ export default function ArtigoNovo() {
           <div className="flex flex-col items-center md:flex-row md:items-start gap-6">
             <div className="flex-shrink-0">
               <img
-                src={formData.banner || "/file.svg"}
+                src={formData.banner || "/artigoTsBanner.png"}
                 alt="Banner preview"
                 className="w-32 h-32 rounded-lg bg-purple-500 object-cover"
               />

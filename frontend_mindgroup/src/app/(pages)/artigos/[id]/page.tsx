@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -7,6 +7,8 @@ import { FiX } from "react-icons/fi";
 import Settings from "@/app/components/templates/Settings";
 import LogoDark from "@/app/components/LogoDark";
 import { FaHeart } from "react-icons/fa";
+import Navbar from "@/app/components/templates/Navbar";
+import NavbarDesktop from "@/app/components/templates/NavbarDesktop";
 
 interface Artigo {
   id: number;
@@ -26,6 +28,20 @@ export default function ArtigoPage() {
   const [artigo, setArtigo] = useState<Artigo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sidebarAberta, setSidebarAberta] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Function to check screen size
+  const checkScreenSize = () => {
+    setIsDesktop(window.innerWidth >= 1024); // Assuming 1024px as the desktop breakpoint
+  };
+
+  useEffect(() => {
+    checkScreenSize(); // Check on initial render
+    window.addEventListener('resize', checkScreenSize); // Add resize listener
+
+    // Cleanup listener on unmount
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   useEffect(() => {
     fetch(`http://localhost:3000/artigos/${id}`)
@@ -55,68 +71,55 @@ export default function ArtigoPage() {
 
   return (
     <>
-      <nav className="flex items-center justify-between p-6">
-        <div className="flex space-x-6">
-          <Link href="/Home" className="text-gray-800 hover:text-gray-600 font-medium pr-5">Home</Link>
-          <Link href="/artigos" className="text-gray-800 hover:text-gray-600 font-medium">Artigos</Link>
-        </div>
-        <button 
-          onClick={() => setSidebarAberta(true)} 
-          className="transition-transform duration-300 hover:scale-110"
-        >
-          <img 
-            src={artigo.autor.imagemPerfil || "/default-avatar.png"} 
-            alt="Autor" 
-            className="w-10 h-10 rounded-full bg-purple-500" 
-          />
-        </button>
-      </nav>
+      {/* Conditionally render Navbar or NavbarDesktop */}
+      {isDesktop ? <NavbarDesktop /> : <Navbar />}
 
       <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="flex justify-center mb-8 bg-purple-500 w-220 h-40 rounded-md">
-          {artigo.banner && (
-            <img
-              src={artigo.banner}
-              alt="Banner do artigo"
-              className="w-full max-h-96 object-cover rounded-xl"
-            />
-          )}
-        </div>
-        
-        <div className="text-left mb-8">
-          
-          
-          <div className="flex justify-between items-center w-full">  {/* Container principal */}
-            <div className="flex items-center">  {/* Nome do autor e data */}
-                <img
+        {/* Author Section and Title */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center w-full mb-4">
+            <div className="flex items-center">
+              <img
                 src={artigo.autor.imagemPerfil || "/default-avatar.png"}
                 alt={artigo.autor.nome}
                 className="w-10 h-10 rounded-full"
-                />
-                <div className="ml-3">
-                    <p className="text-sm text-gray-500">
-                    {artigo.autor.nome} {artigo.autor.sobrenome}
-                    {' - '} 
-                    {new Date(artigo.createdAt).toLocaleDateString('pt-BR', {
+              />
+              <div className="ml-3">
+                <p className="text-sm text-gray-500">
+                  {artigo.autor.nome} {artigo.autor.sobrenome}
+                  {' - '}
+                  {new Date(artigo.createdAt).toLocaleDateString('pt-BR', {
                     day: '2-digit',
                     month: 'long',
                     year: 'numeric',
-                    })}
-                    </p>
-                </div>
+                  })}
+                </p>
+              </div>
             </div>
-  
-            {/* Ícone do coração alinhado à direita */}
             <FaHeart className="text-red-600 text-xl" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{artigo.titulo}</h1>
         </div>
+        
+        {/* Divider Line */}
+        <hr className="border-t border-gray-300 my-8" />
+        {/* Banner */}
+        <div className="w-full h-150 mb-8">
+          <img
+            src={artigo.banner || '/artigoTsBanner.png'}
+            alt={`Imagem de ${artigo.titulo}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
 
+        {/* Article Content */}
         <article className="prose prose-lg text-gray-800 mx-auto text-left">
           {artigo.conteudo.split("\n").map((paragrafo, index) => (
             <p key={index} className="text-left">{paragrafo}</p>
           ))}
         </article>
+
+        
       </main>
 
       {/* Sidebar */}

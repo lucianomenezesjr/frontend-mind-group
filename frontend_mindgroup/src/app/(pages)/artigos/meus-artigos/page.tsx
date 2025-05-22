@@ -6,6 +6,8 @@ import { FiX, FiEdit2, FiTrash2 } from "react-icons/fi";
 import Settings from "@/app/components/templates/Settings";
 import LogoDark from "@/app/components/LogoDark";
 import { FaHeart } from "react-icons/fa";
+import Navbar from "@/app/components/templates/Navbar";
+import NavbarDesktop from "@/app/components/templates/NavbarDesktop";
 
 interface Artigo {
   id: number;
@@ -22,6 +24,20 @@ export default function MeusArtigos() {
   const [sidebarAberta, setSidebarAberta] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [artigoSelecionado, setArtigoSelecionado] = useState<Artigo | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Function to check screen size
+  const checkScreenSize = () => {
+    setIsDesktop(window.innerWidth >= 1024); // Assuming 1024px as the desktop breakpoint
+  };
+
+  useEffect(() => {
+    checkScreenSize(); // Check on initial render
+    window.addEventListener('resize', checkScreenSize); // Add resize listener
+
+    // Cleanup listener on unmount
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -91,16 +107,8 @@ export default function MeusArtigos() {
 
   return (
     <>
-      {/* NAVBAR */}
-      <nav className="flex items-center justify-between p-4 md:p-6">
-        <div className="flex space-x-4 md:space-x-6">
-          <Link href="/Home" className="text-gray-800 hover:text-gray-600 font-medium text-sm md:text-base pr-3 md:pr-5">Home</Link>
-          <Link href="/artigos" className="text-gray-800 hover:text-gray-600 font-medium text-sm md:text-base">Artigos</Link>
-        </div>
-        <button onClick={() => setSidebarAberta(true)} className="transition-transform duration-300 hover:scale-110">
-          <img src={userData.avatar || "/default-avatar.png"} alt="Profile" className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-500" />
-        </button>
-      </nav>
+      {/* Conditionally render Navbar or NavbarDesktop */}
+      {isDesktop ? <NavbarDesktop /> : <Navbar />}
 
       {/* CONTEÚDO PRINCIPAL */}
       <main className="container mx-auto px-4 py-6 md:py-8 max-w-3xl">
@@ -139,7 +147,7 @@ export default function MeusArtigos() {
                   <FaHeart className="text-red-600 text-xl md:text-2xl flex items-center w-7 h-7 md:w-9 md:h-9 justify-center p-1 md:p-2" />
                   <button
                     onClick={() => handleEditar(artigo.id)}
-                    className="text-white hover:text-red-800 bg-black p-1 md:p-2 rounded-md w-12 h-6 md:w-16 md:h-8 flex items-center justify-center"
+                    className="text-white hover:text-gray-400 bg-black p-1 md:p-2 rounded-md w-12 h-6 md:w-16 md:h-8 flex items-center justify-center"
                     title="Editar"
                   >
                     <FiEdit2 size={16} className="md:size-5" />
@@ -194,16 +202,14 @@ export default function MeusArtigos() {
         } transition-transform duration-300 ease-in-out z-50 shadow-xl`}
       >
         <div className="p-4 h-full flex flex-col">
-          <div className="flex justify-end mb-6">
-            <div className="flex justify-between items-center w-full">
-              <LogoDark />
-              <button
-                onClick={() => setSidebarAberta(false)}
-                className="p-2 rounded-full hover:bg-gray-100"
-              >
-                <FiX className="text-xl text-black" />
-              </button>
-            </div>
+          <div className="flex justify-between items-center w-full mb-6">
+            <LogoDark />
+            <button
+              onClick={() => setSidebarAberta(false)}
+              className="p-2 rounded-full hover:bg-gray-100"
+            >
+              <FiX className="text-xl text-black" />
+            </button>
           </div>
           <Settings />
         </div>

@@ -1,15 +1,30 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BotaoSubmit from "@/app/components/BotaoSubmit";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Logo from "@/app/components/Logo";
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Function to check screen size
+  const checkScreenSize = () => {
+    setIsDesktop(window.innerWidth >= 1024); // Assuming 1024px as the desktop breakpoint
+  };
+
+  useEffect(() => {
+    checkScreenSize(); // Check on initial render
+    window.addEventListener('resize', checkScreenSize); // Add resize listener
+
+    // Cleanup listener on unmount
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,50 +56,58 @@ export default function Login() {
   };
 
   return (
-    <div className="bg-white min-h-screen w-full flex flex-col items-center text-[#1B1B1B] px-4">
-      <div className="w-full max-w-[500px] gap-6 pt-12 md:pt-24 p-4 md:p-6">
-        <h1 className="font-bold text-2xl md:text-3xl text-[#1B1B1B]">Bem-vindo de volta!</h1>
-        <p className="pt-6 md:pt-8 text-[#1B1B1B]">
-          Acesse sua conta para acompanhar artigos exclusivos, favoritar e muito mais.
-        </p>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 md:gap-6 w-full max-w-[500px] p-4 md:p-6"
-      >
-        <input
-          type="text"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 md:p-2 border border-gray-400 rounded text-gray-600"
-          placeholder="Email"
-          required
-        />
-        <input
-          type="password"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          className="w-full p-3 md:p-2 border border-gray-400 rounded text-gray-600"
-          placeholder="Senha"
-          required
-        />
-        <Link
-          className="text-[#1B1B1B] text-right hover:text-black hover:underline text-sm md:text-base"
-          href={"/EsqueciSenha"}
-        >
-          Esqueceu a senha?
-        </Link>
-        <BotaoSubmit label={`Login`} />
-        <div className="text-center text-sm md:text-base">
-          <p>
-            Novo usuário?{" "}
-            <Link className="text-[#1B1B1B] hover:text-black hover:underline" href={"/Cadastro"}>
-              Clique aqui
-            </Link>
-          </p>
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Left Section (Logo and Tagline) - Hidden on mobile, visible on desktop */}
+      {isDesktop && (
+        <div className="hidden md:flex md:w-1/2 bg-black text-white items-center justify-center p-6">
+          <div className="text-center">
+            <Logo />
+            <p className="text-lg">Inovação ao Seu Alcance.</p>
+          </div>
         </div>
-      </form>
+      )}
+
+      {/* Right Section (Login Form) */}
+      <div className="w-full md:w-1/2 bg-white flex items-center justify-center p-4 md:p-6">
+        <div className="w-full max-w-[500px] space-y-6">
+          <h1 className="font-bold text-2xl md:text-3xl text-[#1B1B1B] text-center md:text-left">
+            Conectar
+          </h1>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-6">
+            <input
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 md:p-2 border border-gray-400 rounded text-gray-600 placeholder-gray-400"
+              placeholder="Email"
+              required
+            />
+            <input
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              className="w-full p-3 md:p-2 border border-gray-400 rounded text-gray-600 placeholder-gray-400"
+              placeholder="Senha"
+              required
+            />
+            <Link
+              className="text-[#1B1B1B] text-right hover:text-black hover:underline text-sm md:text-base"
+              href="/EsqueciSenha"
+            >
+              Esqueceu a senha?
+            </Link>
+            <BotaoSubmit label="Entrar" />
+            <div className="text-center text-sm md:text-base">
+              <p>
+                Novo usuário?{" "}
+                <Link className="text-[#1B1B1B] hover:text-black hover:underline" href="/Cadastro">
+                  Clique aqui
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
