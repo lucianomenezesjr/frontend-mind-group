@@ -1,25 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from 'next/link';
-import Settings from "@/app/components/templates/Settings";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { FiX } from "react-icons/fi";
+import Settings from "@/app/components/templates/Settings";
 import LogoDark from "@/app/components/LogoDark";
 import BotaoSubmit from "@/app/components/BotaoSubmit";
 import { toast } from "sonner";
 
-export default function ArtigoNovo() {
+export default function EditarArtigo() {
+  const { id } = useParams(); // Pega o ID da URL
+  const router = useRouter();
+  
   const [sidebarAberta, setSidebarAberta] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
-  const [userData, setUserData] = useState({
-    avatar: "",
-    name: "",
-  });
-
+  const [userData, setUserData] = useState({ avatar: "", name: "" });
   const [formData, setFormData] = useState({
     banner: "",
     titulo: "",
@@ -31,63 +29,73 @@ export default function ArtigoNovo() {
     setToken(storedToken);
 
     if (storedToken) {
-      fetch('http://localhost:3000/users/me', {
-        headers: {
-          'Authorization': `Bearer ${storedToken}`
-        }
+      fetch("http://localhost:3000/users/me", {
+        headers: { Authorization: `Bearer ${storedToken}` },
       })
-      .then(res => res.json())
-      .then(data => {
-        setUserData({
-          avatar: data.imagemPerfil || "",
-          name: `${data.nome} ${data.sobrenome}`,
+        .then((res) => res.json())
+        .then((data) => {
+          setUserData({
+            avatar: data.imagemPerfil || "",
+            name: `${data.nome} ${data.sobrenome}`,
+          });
         });
-      })
-      .catch(() => setError("Erro ao carregar dados do usuário"));
-    }
-  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      // Buscar dados do artigo atual
+      fetch(`http://localhost:3000/artigos/${id}`, {
+        headers: { Authorization: `Bearer ${storedToken}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setFormData({
+            banner: data.imagemBanner || "",
+            titulo: data.titulo || "",
+            conteudo: data.conteudo || "",
+          });
+        })
+        .catch(() => toast.error("Erro ao carregar artigo."));
+    }
+  }, [id]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
     if (!token) {
-      setError("Usuário não autenticado.");
+      toast.error("Usuário não autenticado.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/artigos', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:3000/artigos/${id}`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-        titulo: formData.titulo,
-        conteudo: formData.conteudo,
-        imagemBanner: formData.banner  // CORRIGIDO
-        })
+          titulo: formData.titulo,
+          conteudo: formData.conteudo,
+          imagemBanner: formData.banner,
+        }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Erro ao criar artigo.");
+        throw new Error(data.message || "Erro ao atualizar artigo.");
       }
 
-      toast.success("Artigo criado com sucesso!");
-      setFormData({ banner: "", titulo: "", conteudo: "" });
+      toast.success("Artigo atualizado com sucesso!");
+      router.push("/artigos");
 
     } catch (err: any) {
-      toast.error(err.message || "Erro inesperado.");
+      toast.error(err.message || "Erro ao atualizar artigo.");
     } finally {
       setLoading(false);
     }
@@ -100,18 +108,13 @@ export default function ArtigoNovo() {
           <Link href="/Home" className="text-gray-800 hover:text-gray-600 font-medium pr-5">Home</Link>
           <Link href="/artigos" className="text-gray-800 hover:text-gray-600 font-medium">Artigos</Link>
         </div>
-        <button 
-          onClick={() => setSidebarAberta(true)}
-          className="transition-transform duration-300 hover:scale-110"
-        >
+        <button onClick={() => setSidebarAberta(true)} className="transition-transform duration-300 hover:scale-110">
           <img src={userData.avatar || "/default-avatar.png"} alt="Profile" className="w-10 h-10 rounded-full bg-purple-500" />
         </button>
       </nav>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <h1 className="text-xl pb-6 text-center">Criar artigo</h1>
-
-        
+        <h1 className="text-xl pb-6 text-left">Editar artigo</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col items-center md:flex-row md:items-start gap-6">
@@ -164,7 +167,7 @@ export default function ArtigoNovo() {
           </div>
 
           <div className="flex justify-center pt-4">
-            <BotaoSubmit className="w-full md:w-64" label={loading ? "Salvando..." : "Salvar"} />
+            <BotaoSubmit className="w-full md:w-64" label={loading ? "Salvando..." : "Salvar alterações"} />
           </div>
         </form>
       </main>
@@ -174,9 +177,9 @@ export default function ArtigoNovo() {
       } transition-transform duration-300 ease-in-out z-50 shadow-xl`}>
         <div className="p-4 h-full flex flex-col">
           <div className="flex justify-end mb-6">
-            <div className='flex justify-between items-center w-full'>
+            <div className="flex justify-between items-center w-full">
               <LogoDark />
-              <button 
+              <button
                 onClick={() => setSidebarAberta(false)}
                 className="p-2 rounded-full hover:bg-gray-100"
               >
@@ -189,7 +192,7 @@ export default function ArtigoNovo() {
       </div>
 
       {sidebarAberta && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-30 z-40"
           onClick={() => setSidebarAberta(false)}
         />

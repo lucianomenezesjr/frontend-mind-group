@@ -94,7 +94,7 @@ export default function MeusArtigos() {
       {/* NAVBAR */}
       <nav className="flex items-center justify-between p-4 md:p-6">
         <div className="flex space-x-4 md:space-x-6">
-          <Link href="/Home" className="text-gray-800 hover:text-gray-600 font-medium text-sm md:text-base pr-3 md:pr-5">Home</Link>
+          <Link href="/" className="text-gray-800 hover:text-gray-600 font-medium text-sm md:text-base pr-3 md:pr-5">Home</Link>
           <Link href="/artigos" className="text-gray-800 hover:text-gray-600 font-medium text-sm md:text-base">Artigos</Link>
         </div>
         <button onClick={() => setSidebarAberta(true)} className="transition-transform duration-300 hover:scale-110">
@@ -165,7 +165,6 @@ export default function MeusArtigos() {
             <h2 className="text-xl font-bold mb-4">EXCLUIR ARTIGO?</h2>
             <div className="bg-gray-100 p-3 mb-4 border border-gray-300 rounded">
               <p className="font-semibold">{artigoSelecionado.titulo}</p>
-              <p className="font-semibold">{artigoSelecionado.conteudo}</p>
               <p>
                 CRIADO EM: {new Date(artigoSelecionado.createdAt).toLocaleDateString('pt-BR', {
                   day: '2-digit',
