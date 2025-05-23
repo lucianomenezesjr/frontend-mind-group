@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="pt-br">
       <body className={font.className}>
         {children}
-        <Toaster richColors position="top-center" />
+        <Toaster richColors position="bottom-left" />
       </body>
     </html>
   );

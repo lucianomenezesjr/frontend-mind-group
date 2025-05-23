@@ -8,6 +8,7 @@ import LogoDark from "@/app/components/LogoDark";
 import { FaHeart } from "react-icons/fa";
 import Navbar from "@/app/components/templates/Navbar";
 import NavbarDesktop from "@/app/components/templates/NavbarDesktop";
+import {  useRouter } from "next/navigation";
 
 interface Artigo {
   id: number;
@@ -30,18 +31,24 @@ export default function MeusArtigos() {
   const checkScreenSize = () => {
     setIsDesktop(window.innerWidth >= 1024); // Assuming 1024px as the desktop breakpoint
   };
-
+    
   useEffect(() => {
     checkScreenSize(); // Check on initial render
     window.addEventListener('resize', checkScreenSize); // Add resize listener
 
-    // Cleanup listener on unmount
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
+  const router = useRouter();
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+
     setToken(storedToken);
+
+    if(!storedToken){
+      router.replace("/")
+    }
 
     if (storedToken) {
       fetch("http://localhost:3000/users/me", {

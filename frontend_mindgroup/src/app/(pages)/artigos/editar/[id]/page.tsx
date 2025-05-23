@@ -28,6 +28,10 @@ export default function EditarArtigo() {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
 
+    if(!storedToken){
+      router.replace("/")
+    }
+
     if (storedToken) {
       fetch("http://localhost:3000/users/me", {
         headers: { Authorization: `Bearer ${storedToken}` },

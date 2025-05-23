@@ -7,6 +7,8 @@ import { FiX } from "react-icons/fi";
 import LogoDark from "@/app/components/LogoDark";
 import BotaoSubmit from "@/app/components/BotaoSubmit";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
 
 export default function ArtigoNovo() {
   const [sidebarAberta, setSidebarAberta] = useState(false);
@@ -26,9 +28,15 @@ export default function ArtigoNovo() {
     conteudo: "",
   });
 
+  
+  const router = useRouter();
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
+
+    if(!storedToken){
+      router.replace("/")
+    }
 
     if (storedToken) {
       fetch('http://localhost:3000/users/me', {

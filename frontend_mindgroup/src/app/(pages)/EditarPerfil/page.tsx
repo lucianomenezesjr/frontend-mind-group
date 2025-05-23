@@ -6,6 +6,7 @@ import Settings from "@/app/components/templates/Settings";
 import { FiX } from "react-icons/fi";
 import LogoDark from "@/app/components/LogoDark";
 import BotaoSubmit from "@/app/components/BotaoSubmit";
+import {  useRouter } from "next/navigation";
 
 export default function EditProfilePage() {
   const [sidebarAberta, setSidebarAberta] = useState(false);
@@ -23,9 +24,15 @@ export default function EditProfilePage() {
     confirmPassword: ""
   });
 
-  useEffect(() => {
+  const router = useRouter();
+  useEffect(() => {   
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
+    console.log(storedToken)
+
+    if(!storedToken){
+      router.replace("/")
+    }
 
     if (storedToken) {
       fetch('http://localhost:3000/users/me', {
